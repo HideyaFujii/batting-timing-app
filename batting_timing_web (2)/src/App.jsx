@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 const speedDelays = {
+  "100": 0.684,
   "110": 0.618,
   "120": 0.555,
   "130": 0.513,
@@ -15,7 +16,7 @@ export default function App() {
     const release = new Audio("/sounds/release_louder.wav");
     const impact = new Audio("/sounds/impact_refined_louder.wav");
 
-    const releaseDelay = 300; // ms
+    const releaseDelay = 500; // ← 少し長めに調整
     const impactDelay = releaseDelay + speedDelays[speed] * 1000; // ms
 
     start.play().catch((e) => alert("ザッの再生失敗: " + e.message));
@@ -44,3 +45,4 @@ export default function App() {
     </div>
   );
 }
+
