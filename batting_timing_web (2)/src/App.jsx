@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 
 const soundMap = {
   start: "/sounds/start_louder.wav",
@@ -19,9 +19,25 @@ export default function App() {
   const [isRunning, setIsRunning] = useState(false);
   const loopRef = useRef(null);
 
+  const audioRefs = {
+    start: useRef(null),
+    release: useRef(null),
+    impact: useRef(null),
+  };
+
+  useEffect(() => {
+    // preload audios on mount
+    audioRefs.start.current = new Audio(soundMap.start);
+    audioRefs.release.current = new Audio(soundMap.release);
+    audioRefs.impact.current = new Audio(soundMap.impact);
+  }, []);
+
   const playSound = (key) => {
-    const audio = new Audio(soundMap[key]);
-    audio.play();
+    const sound = audioRefs[key]?.current;
+    if (sound) {
+      sound.currentTime = 0;
+      sound.play().catch((e) => console.warn("Playback failed:", e));
+    }
   };
 
   const startLoop = () => {
