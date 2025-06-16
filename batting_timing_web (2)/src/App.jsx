@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 
-// Web Audio APIで精密時間制御
+// Web Audio APIで精密時間制御（スタート→1.5秒→リリース→速度依存秒後→インパクト）
 export default function App() {
   const [speed, setSpeed] = useState("120");
   const [intervalSec, setIntervalSec] = useState(3);
@@ -32,7 +32,7 @@ export default function App() {
         .then((res) => res.arrayBuffer())
         .then((data) => ctx.decodeAudioData(data))
         .then((buffer) => { buffersRef.current[key] = buffer; })
-        .catch((e) => console.warn(key + " buffer load failed", e));
+        .catch((e) => console.warn(`${key} buffer load failed`, e));
     });
   }, []);
 
@@ -40,11 +40,9 @@ export default function App() {
   const playSequence = () => {
     const ctx = ctxRef.current;
     if (!ctx) return;
-    const now = ctx.currentTime + 0.1;
-    // リリース音は0.1秒後に鳴らす
-    const releaseTime = now + 0.1;
-    // インパクト音はspeedDelays秒後に鳴らす
-    const impactTime = now + speedDelays[speed];
+    const startTime = ctx.currentTime + 0.1;
+    const releaseTime = startTime + 1.5; // スタートから1.5秒後
+    const impactTime = releaseTime + speedDelays[speed]; // さらに球速依存秒後
 
     const playBuffer = (key, time) => {
       const buffer = buffersRef.current[key];
@@ -55,7 +53,7 @@ export default function App() {
       src.start(time);
     };
 
-    playBuffer("start", now);
+    playBuffer("start", startTime);
     playBuffer("release", releaseTime);
     playBuffer("impact", impactTime);
   };
