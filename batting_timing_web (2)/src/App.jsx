@@ -14,7 +14,7 @@ export default function App() {
   const playSequence = () => {
     const start = new Audio("/sounds/start_louder.wav");
     const release = new Audio("/sounds/release_louder.wav");
-    const impact = new Audio("/sounds/impact_refined_louder.wav");
+    const impact = new Audio("/sounds/impact_crisp_powered.wav");
 
     const startDelay = 0; // ザッ：即時
     const releaseDelay = 1500; // ピッ：スタートから1.5秒後
