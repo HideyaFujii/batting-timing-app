@@ -1,21 +1,45 @@
+import { useState } from "react";
+
+const speedDelays = {
+  "110": 0.618,
+  "120": 0.555,
+  "130": 0.513,
+  "140": 0.480,
+};
+
 export default function App() {
+  const [speed, setSpeed] = useState("120");
+
   const playSequence = () => {
     const start = new Audio("/sounds/start_louder.wav");
     const release = new Audio("/sounds/release_louder.wav");
     const impact = new Audio("/sounds/impact_refined_louder.wav");
 
+    const releaseDelay = 300; // ms
+    const impactDelay = releaseDelay + speedDelays[speed] * 1000; // ms
+
     start.play().catch((e) => alert("ザッの再生失敗: " + e.message));
     setTimeout(() => {
       release.play().catch((e) => alert("ピッの再生失敗: " + e.message));
-    }, 200);
+    }, releaseDelay);
     setTimeout(() => {
       impact.play().catch((e) => alert("ドンッの再生失敗: " + e.message));
-    }, 500); // 合計0.5秒後（ピッから0.3秒）
+    }, impactDelay);
   };
 
   return (
     <div style={{ padding: 20 }}>
-      <h2>テスト：ザッ→ピッ→ドンッの一連再生</h2>
+      <h2>球速別：ザッ→ピッ→ドンッ</h2>
+
+      <div style={{ marginBottom: 10 }}>
+        <label>球速（km/h）：</label>
+        <select value={speed} onChange={(e) => setSpeed(e.target.value)}>
+          {Object.keys(speedDelays).map((s) => (
+            <option key={s} value={s}>{s}</option>
+          ))}
+        </select>
+      </div>
+
       <button onClick={playSequence}>再生する</button>
     </div>
   );
