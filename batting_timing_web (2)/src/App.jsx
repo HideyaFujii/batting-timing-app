@@ -1,14 +1,14 @@
 import { useState, useRef, useEffect } from "react";
 
-// 正確な時間制御のため Web Audio API を使用
+// Web Audio APIで精密時間制御
 export default function App() {
   const [speed, setSpeed] = useState("120");
   const [intervalSec, setIntervalSec] = useState(3);
-  const audioContextRef = useRef(null);
+  const ctxRef = useRef(null);
   const buffersRef = useRef({});
   const loopRef = useRef(null);
 
-  // 球速ごとのリリース→インパクト間隔
+  // 球速毎のリリース→インパクト間隔（秒）
   const speedDelays = {
     "100": 0.684,
     "110": 0.618,
@@ -17,15 +17,17 @@ export default function App() {
     "140": 0.480,
   };
 
-  // 音声ファイルをロードしてバッファに格納
+  // 初回マウント時にAudioContextとバッファを準備
   useEffect(() => {
-    audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
-    const ctx = audioContextRef.current;
-    [
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    const ctx = new AudioContext();
+    ctxRef.current = ctx;
+    const sounds = [
       ["start", "/sounds/start_louder.wav"],
       ["release", "/sounds/release_louder.wav"],
       ["impact", "/sounds/impact_crisp_powered.wav"],
-    ].forEach(([key, url]) => {
+    ];
+    sounds.forEach(([key, url]) => {
       fetch(url)
         .then((res) => res.arrayBuffer())
         .then((data) => ctx.decodeAudioData(data))
@@ -34,14 +36,16 @@ export default function App() {
     });
   }, []);
 
-  // Web Audio API で正確に再生スケジュール
+  // 正確に各音をスケジューリング
   const playSequence = () => {
-    const ctx = audioContextRef.current;
-    const now = ctx.currentTime + 0.1; // 少し遅延を持たせる
-    const releaseDelay = 1.5; // スタートから1.5秒後
-    const impactDelay = releaseDelay + speedDelays[speed];
+    const ctx = ctxRef.current;
+    if (!ctx) return;
+    const now = ctx.currentTime + 0.1;
+    // リリース音は0.1秒後に鳴らす
+    const releaseTime = now + 0.1;
+    // インパクト音はspeedDelays秒後に鳴らす
+    const impactTime = now + speedDelays[speed];
 
-    // ヘルパー
     const playBuffer = (key, time) => {
       const buffer = buffersRef.current[key];
       if (!buffer) return;
@@ -52,21 +56,20 @@ export default function App() {
     };
 
     playBuffer("start", now);
-    playBuffer("release", now + releaseDelay);
-    playBuffer("impact", now + impactDelay);
+    playBuffer("release", releaseTime);
+    playBuffer("impact", impactTime);
   };
 
-  // ループ開始/停止
+  // ループ制御
   const startLoop = () => {
     if (loopRef.current) return;
     playSequence();
     loopRef.current = setInterval(playSequence, intervalSec * 1000);
   };
   const stopLoop = () => {
-    if (loopRef.current) {
-      clearInterval(loopRef.current);
-      loopRef.current = null;
-    }
+    if (!loopRef.current) return;
+    clearInterval(loopRef.current);
+    loopRef.current = null;
   };
 
   return (
@@ -96,4 +99,5 @@ export default function App() {
     </div>
   );
 }
+
 
