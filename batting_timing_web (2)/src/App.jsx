@@ -16,13 +16,18 @@ export default function App() {
     const release = new Audio("/sounds/release_louder.wav");
     const impact = new Audio("/sounds/impact_refined_louder.wav");
 
-    const releaseDelay = 500; // ← 少し長めに調整
-    const impactDelay = releaseDelay + speedDelays[speed] * 1000; // ms
+    const startDelay = 0; // ザッ：即時
+    const releaseDelay = 1500; // ピッ：スタートから1.5秒後
+    const impactDelay = releaseDelay + speedDelays[speed] * 1000;
 
-    start.play().catch((e) => alert("ザッの再生失敗: " + e.message));
+    setTimeout(() => {
+      start.play().catch((e) => alert("ザッの再生失敗: " + e.message));
+    }, startDelay);
+
     setTimeout(() => {
       release.play().catch((e) => alert("ピッの再生失敗: " + e.message));
     }, releaseDelay);
+
     setTimeout(() => {
       impact.play().catch((e) => alert("ドンッの再生失敗: " + e.message));
     }, impactDelay);
